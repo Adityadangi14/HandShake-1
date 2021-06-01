@@ -683,11 +683,12 @@ public class ChatActivity extends AppCompatActivity {
                             public boolean onMenuItemClick(MenuItem menuItem) {
                                 switch (menuItem.getItemId()) {
                                     case R.id.delete:
-                                        firebaseDatabase.getReference().child("Chats")
+                                        FirebaseDatabase.getInstance().getReference().child("Chats")
                                                 .child(getIntent().getStringExtra("groupId").toString())
                                                 .child("Massages")
                                                 .child(massage.getChatId())
                                                 .removeValue();
+                                        
                                         return true;
                                 }
                                 return false;
