@@ -40,6 +40,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -193,6 +194,7 @@ public class ChatActivity extends AppCompatActivity {
                         massages.clear();
                         for (DataSnapshot snapshot1 : snapshot.getChildren()) {
                             Massage massage = snapshot1.getValue(Massage.class);
+                            massage.setChatId(snapshot1.getKey().toString());
                             massages.add(massage);
                         }
                         progressBarDialog.dismiss();
@@ -667,6 +669,31 @@ public class ChatActivity extends AppCompatActivity {
                             }
                         });
 
+                    }
+                });
+
+                viewHolder.sentMassageTextView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        PopupMenu popupMenu = new PopupMenu(ChatActivity.this,view);
+                        popupMenu.inflate(R.menu.massage_popup);
+                        popupMenu.show();
+                        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                            @Override
+                            public boolean onMenuItemClick(MenuItem menuItem) {
+                                switch (menuItem.getItemId()) {
+                                    case R.id.delete:
+                                        firebaseDatabase.getReference().child("Chats")
+                                                .child(getIntent().getStringExtra("groupId").toString())
+                                                .child("Massages")
+                                                .child(massage.getChatId())
+                                                .removeValue();
+                                        return true;
+                                }
+                                return false;
+                            }
+                        });
+                        return false;
                     }
                 });
 

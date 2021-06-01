@@ -5,7 +5,7 @@ import java.util.HashMap;
 
 public class Massage {
 
-    private String massages,phoneNumber,images;
+    private String massages,phoneNumber,images,chatId;
     private Date timeStamp;
 
     public Massage() {
@@ -47,5 +47,13 @@ public class Massage {
 
     public void setTimeStamp(Date timeStamp) {
         this.timeStamp = timeStamp;
+    }
+
+    public String getChatId() {
+        return chatId;
+    }
+
+    public void setChatId(String chatId) {
+        this.chatId = chatId;
     }
 }
