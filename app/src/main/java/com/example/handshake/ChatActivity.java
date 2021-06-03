@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -208,13 +209,6 @@ public class ChatActivity extends AppCompatActivity {
 
                     }
                 });
-
-//        chating_recyclerView.addOnLayoutChangeListener(new View.OnLayoutChangeListener() {
-//            @Override
-//            public void onLayoutChange(View view, int i, int i1, int i2, int i3, int i4, int i5, int i6, int i7) {
-//                chating_recyclerView.smoothScrollToPosition(chating_recyclerView.getAdapter().getItemCount());
-//            }
-//        });
         
         chating_cameraImageButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -232,8 +226,6 @@ public class ChatActivity extends AppCompatActivity {
                 ArrangeData();
             }
         });
-
-
     }
 
     private void ArrangeData() {
@@ -536,6 +528,7 @@ public class ChatActivity extends AppCompatActivity {
                         getMenuInflater().inflate(R.menu.chat_menu,menu);
                         String groupCreaterMobileNumber = dataSnapshot.getValue().toString();
                         if (currentUserMobileNumber.equals(groupCreaterMobileNumber)) {
+                            groupCreaterPhoneNumber = groupCreaterMobileNumber;
                             menu.getItem(2).setVisible(false);
                         }
                         if (!currentUserMobileNumber.equals(groupCreaterMobileNumber)){
@@ -672,31 +665,21 @@ public class ChatActivity extends AppCompatActivity {
                     }
                 });
 
-                viewHolder.sentMassageTextView.setOnLongClickListener(new View.OnLongClickListener() {
+                viewHolder.sent_constraintLayout.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View view) {
-                        PopupMenu popupMenu = new PopupMenu(ChatActivity.this,view);
-                        popupMenu.inflate(R.menu.massage_popup);
-                        popupMenu.show();
-                        popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                            @Override
-                            public boolean onMenuItemClick(MenuItem menuItem) {
-                                switch (menuItem.getItemId()) {
-                                    case R.id.delete:
-                                        FirebaseDatabase.getInstance().getReference().child("Chats")
-                                                .child(getIntent().getStringExtra("groupId").toString())
-                                                .child("Massages")
-                                                .child(massage.getChatId())
-                                                .removeValue();
-                                        
-                                        return true;
-                                }
-                                return false;
-                            }
-                        });
+                        deleteMassage(view,massage);
                         return false;
                     }
                 });
+
+               viewHolder.sentMassageImageView.setOnLongClickListener(new View.OnLongClickListener() {
+                   @Override
+                   public boolean onLongClick(View view) {
+                       deleteMassage(view,massage);
+                       return false;
+                   }
+               });
 
             } else {
                 RecievedViewHolder viewHolder = (RecievedViewHolder)holder;
@@ -725,6 +708,27 @@ public class ChatActivity extends AppCompatActivity {
                 } catch (Exception e) {
 
                 }
+
+
+                viewHolder.recieved_constraintLayout.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        if(currentUserMobileNumber.equals(groupCreaterPhoneNumber)) {
+                            deleteMassage(view,massage);
+                        }
+                        return false;
+                    }
+                });
+
+                viewHolder.recievedMassageImageView.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View view) {
+                        if(currentUserMobileNumber.equals(groupCreaterPhoneNumber)) {
+                            deleteMassage(view,massage);
+                        }
+                        return false;
+                    }
+                });
 
                 viewHolder.recievedMassageImageView.setOnClickListener(new View.OnClickListener() {
                     @Override
@@ -793,6 +797,28 @@ public class ChatActivity extends AppCompatActivity {
             }
         }
 
+        private void deleteMassage(View view,Massage massage) {
+            PopupMenu popupMenu = new PopupMenu(ChatActivity.this,view);
+            popupMenu.inflate(R.menu.massage_popup);
+            popupMenu.show();
+            popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem menuItem) {
+                    switch (menuItem.getItemId()) {
+                        case R.id.delete:
+                            FirebaseDatabase.getInstance().getReference().child("Chats")
+                                    .child(getIntent().getStringExtra("groupId").toString())
+                                    .child("Massages")
+                                    .child(massage.getChatId())
+                                    .removeValue();
+
+                            return true;
+                    }
+                    return false;
+                }
+            });
+        }
+
         @Override
         public int getItemCount() {
             return massages.size();
@@ -803,6 +829,7 @@ public class ChatActivity extends AppCompatActivity {
             TextView sentMassageTextView,sent_timeStampTextView;
             ImageView sentMassageImageView;
             CardView sentMassageCardView;
+            ConstraintLayout sent_constraintLayout;
 
             public SentViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -811,6 +838,7 @@ public class ChatActivity extends AppCompatActivity {
                 sent_timeStampTextView = (TextView)itemView.findViewById(R.id.sent_timeStampTextView);
                 sentMassageImageView = (ImageView)itemView.findViewById(R.id.sentMassageImageView);
                 sentMassageCardView = (CardView)itemView.findViewById(R.id.sentMassageCardView);
+                sent_constraintLayout = (ConstraintLayout)itemView.findViewById(R.id.sent_constraintLayout);
             }
         }
 
@@ -819,6 +847,7 @@ public class ChatActivity extends AppCompatActivity {
             TextView recievedMassageTextView,recieved_timeStampTextView,recieved_userNameTextView;
             ImageView recievedMassageImageView;
             CardView recievedMassageCardView;
+            ConstraintLayout recieved_constraintLayout;
 
             public RecievedViewHolder(@NonNull View itemView) {
                 super(itemView);
@@ -828,6 +857,7 @@ public class ChatActivity extends AppCompatActivity {
                 recieved_userNameTextView = (TextView)itemView.findViewById(R.id.recieved_userNameTextView);
                 recievedMassageImageView = (ImageView)itemView.findViewById(R.id.recievedMassageImageView);
                 recievedMassageCardView = (CardView)itemView.findViewById(R.id.recievedMassageCardView);
+                recieved_constraintLayout = (ConstraintLayout)itemView.findViewById(R.id.recieved_constraintLayout);
             }
         }
     }
