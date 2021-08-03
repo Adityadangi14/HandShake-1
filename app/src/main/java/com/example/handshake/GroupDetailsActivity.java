@@ -26,6 +26,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -61,7 +62,8 @@ public class GroupDetailsActivity extends AppCompatActivity {
 
     RecyclerView group_recyclerView;
     ImageView group_dpImageView;
-    TextView group_exitGroupTextView,group_deleteGroupTextView,group_groupDescriptionTextView;
+    Button confirmationMassageDialog_YesButton,confirmationMassageDialog_NoButton;
+    TextView group_exitGroupTextView,group_deleteGroupTextView,group_groupDescriptionTextView,confirmationMassageDialog_MassageTextView;
     SwipeRefreshLayout swipeRefreshLayout;
 
     ArrayList<UserDetails> userList;
@@ -80,6 +82,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
 
     Dialog imageDialogPopUp;
     Dialog detailedImageDialog;
+    Dialog confirmationMassageDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +113,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
 
         imageDialogPopUp = new Dialog(this);
         detailedImageDialog = new Dialog(this);
+        confirmationMassageDialog = new Dialog(this);
 
         currentUserPhoneNumber = mAuth.getCurrentUser().getPhoneNumber().toString();
 
@@ -123,7 +127,31 @@ public class GroupDetailsActivity extends AppCompatActivity {
         group_deleteGroupTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                deleteGroup();
+//                deleteGroup();
+                confirmationMassageDialog.setContentView(R.layout.confirmation_popup);
+                confirmationMassageDialog.show();
+                confirmationMassageDialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.argb(0,0,0,0)));
+                confirmationMassageDialog_MassageTextView = (TextView)confirmationMassageDialog.findViewById(R.id.confirmationMassage);
+                confirmationMassageDialog_YesButton = (Button)confirmationMassageDialog.findViewById(R.id.yes);
+                confirmationMassageDialog_NoButton = (Button)confirmationMassageDialog.findViewById(R.id.no);
+
+                confirmationMassageDialog_MassageTextView.setText("Are you sure! You want to Delete the group?");
+
+                confirmationMassageDialog_YesButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        Toast.makeText(GroupDetailsActivity.this, "Deleting....", Toast.LENGTH_SHORT).show();
+                        deleteGroup();
+                        confirmationMassageDialog.dismiss();
+                    }
+                });
+
+                confirmationMassageDialog_NoButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        confirmationMassageDialog.dismiss();
+                    }
+                });
             }
         });
 
