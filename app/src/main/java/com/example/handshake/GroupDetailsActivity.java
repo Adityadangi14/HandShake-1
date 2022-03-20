@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Dialog;
 import android.app.DownloadManager;
 import android.app.ProgressDialog;
@@ -40,6 +41,7 @@ import com.bumptech.glide.load.DataSource;
 import com.bumptech.glide.load.engine.GlideException;
 import com.bumptech.glide.request.RequestListener;
 import com.bumptech.glide.request.target.Target;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -84,6 +86,8 @@ public class GroupDetailsActivity extends AppCompatActivity {
     Dialog detailedImageDialog;
     Dialog confirmationMassageDialog;
 
+    String currentUserName;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -116,6 +120,13 @@ public class GroupDetailsActivity extends AppCompatActivity {
         confirmationMassageDialog = new Dialog(this);
 
         currentUserPhoneNumber = mAuth.getCurrentUser().getPhoneNumber().toString();
+        firebaseFirestore.collection("Users").document(currentUserPhoneNumber).get()
+                .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                    @Override
+                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                        currentUserName = documentSnapshot.getString("firstName").toString()+" "+documentSnapshot.getString("lastName").toString();
+                    }
+                });
 
         group_exitGroupTextView.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -320,7 +331,7 @@ public class GroupDetailsActivity extends AppCompatActivity {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull MyViewHolder holder, @SuppressLint("RecyclerView") int position) {
             String userDpUri = userList.get(position).getProfileImageUri();
             Glide.with(context).load(userDpUri).listener(new RequestListener<Drawable>() {
                 @Override
@@ -434,7 +445,98 @@ public class GroupDetailsActivity extends AppCompatActivity {
                             public boolean onMenuItemClick(MenuItem menuItem) {
                                 switch (menuItem.getItemId()) {
                                     case R.id.startChating:
+                                        final Boolean[] exist = {false};
                                         Toast.makeText(context, "chating", Toast.LENGTH_SHORT).show();
+                                        String chatPageId = userList.get(position).getPhoneNumber()+currentUserPhoneNumber;
+                                        firebaseDatabase.getReference().child("Individual").child(currentUserPhoneNumber)
+                                                .get()
+                                                .addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
+                                                    @Override
+                                                    public void onSuccess(DataSnapshot dataSnapshot) {
+                                                        for (DataSnapshot snapshot: dataSnapshot.getChildren()) {
+                                                            if (snapshot.child(userList.get(position).getPhoneNumber().toString()).exists()) {
+                                                                exist[0] = true;
+                                                                break;
+                                                            }
+                                                        }
+                                                        if (exist[0]==true) {
+                                                            Intent intent = new Intent(GroupDetailsActivity.this,IndividualChatActivity.class);
+                                                            intent.putExtra("groupName",userList.get(position).getFirstName().toString()+" "+userList.get(position).getLastName().toString());
+                                                            intent.putExtra("chatPageId",chatPageId);
+                                                            startActivity(intent);
+                                                            finish();
+                                                        } else {
+                                                            IndividualModel model = new IndividualModel(userList.get(position).getFirstName()+" "+userList.get(position).getLastName(),userList.get(position).getPhoneNumber(),chatPageId);
+                                                            firebaseDatabase.getReference().child("Individual")
+                                                                    .child(currentUserPhoneNumber)
+                                                                    .child(userList.get(position).getPhoneNumber())
+                                                                    .setValue(model).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                @Override
+                                                                public void onSuccess(Void unused) {
+                                                                    Intent intent = new Intent(GroupDetailsActivity.this,IndividualChatActivity.class);
+                                                                    intent.putExtra("groupName",userList.get(position).getFirstName().toString()+" "+userList.get(position).getLastName().toString());
+                                                                    intent.putExtra("chatPageId",chatPageId);
+                                                                    startActivity(intent);
+                                                                    finish();
+                                                                }
+                                                            });
+
+                                                            IndividualModel model1 = new IndividualModel(currentUserName,currentUserPhoneNumber,chatPageId);
+                                                            firebaseDatabase.getReference().child("Individual")
+                                                                    .child(userList.get(position).getPhoneNumber())
+                                                                    .child(currentUserPhoneNumber)
+                                                                    .setValue(model1).addOnSuccessListener(new OnSuccessListener<Void>() {
+                                                                @Override
+                                                                public void onSuccess(Void unused) {
+
+                                                                }
+                                                            });
+                                                        }
+                                                    }
+                                                });
+
+//                                        firebaseDatabase.getReference().child("Individual").child(currentUserPhoneNumber).child(userList.get(position).getPhoneNumber().toString())
+//                                                .get()
+//                                                .addOnSuccessListener(new OnSuccessListener<DataSnapshot>() {
+//                                                    @Override
+//                                                    public void onSuccess(DataSnapshot dataSnapshot) {
+//                                                        Intent intent = new Intent(GroupDetailsActivity.this,IndividualChatActivity.class);
+//                                                        intent.putExtra("groupName",userList.get(position).getFirstName().toString()+" "+userList.get(position).getLastName().toString());
+//                                                        intent.putExtra("chatPageId",chatPageId);
+//                                                        startActivity(intent);
+//                                                        finish();
+//                                                    }
+//                                                }).addOnFailureListener(new OnFailureListener() {
+//                                            @Override
+//                                            public void onFailure(@NonNull Exception e) {
+//                                                IndividualModel model = new IndividualModel(userList.get(position).getFirstName()+" "+userList.get(position).getLastName(),userList.get(position).getPhoneNumber(),chatPageId);
+//                                                firebaseDatabase.getReference().child("Individual")
+//                                                        .child(currentUserPhoneNumber)
+//                                                        .child(userList.get(position).getPhoneNumber())
+//                                                        .setValue(model).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                    @Override
+//                                                    public void onSuccess(Void unused) {
+//                                                        Intent intent = new Intent(GroupDetailsActivity.this,IndividualChatActivity.class);
+//                                                        intent.putExtra("groupName",userList.get(position).getFirstName().toString()+" "+userList.get(position).getLastName().toString());
+//                                                        intent.putExtra("chatPageId",chatPageId);
+//                                                        startActivity(intent);
+//                                                        finish();
+//                                                    }
+//                                                });
+//
+//                                                IndividualModel model1 = new IndividualModel(currentUserName,currentUserPhoneNumber,chatPageId);
+//                                                firebaseDatabase.getReference().child("Individual")
+//                                                        .child(userList.get(position).getPhoneNumber())
+//                                                        .child(currentUserPhoneNumber)
+//                                                        .setValue(model1).addOnSuccessListener(new OnSuccessListener<Void>() {
+//                                                    @Override
+//                                                    public void onSuccess(Void unused) {
+//
+//                                                    }
+//                                                });
+//                                            }
+//                                        });
+
                                         return true;
                                     case R.id.call:
                                         requestCallPermission();

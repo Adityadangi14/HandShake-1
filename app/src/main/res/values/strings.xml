@@ -1,7 +1,10 @@
 <resources>
     <string name="app_name">HandShake</string>
     <string name="title_activity_main">HandShake</string>
-    <string name="tab_text_1">Chats</string>
+    <string name="tab_test_0">Individual</string>
+    <string name="tab_text_1">Groups</string>
     <string name="tab_text_2">Search</string>
     <string name="tab_text_3">Create</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

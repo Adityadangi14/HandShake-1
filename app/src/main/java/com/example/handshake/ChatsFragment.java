@@ -1,6 +1,7 @@
 package com.example.handshake;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.ActionBar;
 import android.app.Dialog;
 import android.app.DownloadManager;
@@ -259,7 +260,7 @@ public class ChatsFragment extends Fragment {
         }
 
         @Override
-        public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
+        public void onBindViewHolder(@NonNull MyViewHolder holder, @SuppressLint("RecyclerView") int position) {
                 DateFormat df = new SimpleDateFormat("h:mm a");
                 String groupDpUri = groupDataList.get(position).getGroupDpImageUri();
                 Glide.with(getContext()).load(groupDpUri).listener(new RequestListener<Drawable>() {
